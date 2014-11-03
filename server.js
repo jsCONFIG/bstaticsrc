@@ -246,11 +246,19 @@ http.createServer(function ( req, res ){
                     if( needMonitorFlag ){
 
                         // 将线上资源缓存到本地
-                        var cachePath = CONFIG.STATIC_CACHE_PATH + '\\' + pathPrefix + GLOBAL.SRC_PATH;
+                        var cachePath = CONFIG.STATIC_CACHE_PATH + '/' + pathPrefix + GLOBAL.SRC_PATH;
+
+                        // 修正路径
+                        cachePath = cachePath.replace( /\/\//g, '\/' );
                         
                         // 依照请求域名，以同步方式创建文件目录
                         // 例: /a.tbcdn.cn/s/
-                        createPath( pathPrefix + GLOBAL.SRC_PATH );
+                        
+                        // path处理，保证兼容item中含有路径信息的情况
+                        var tmpFilePath = pathPrefix + GLOBAL.SRC_PATH + item;
+                        tmpFilePath = tmpFilePath.slice( 0, tmpFilePath.lastIndexOf( '/' ) + 1 );
+
+                        createPath( tmpFilePath );
 
                         fs.writeFile( cachePath + item, tmpContent, function ( err ){
                             if( err ){
