@@ -1,7 +1,7 @@
 {
   "name": "bstaticsrc",
   "description": "Web source parse, node server, web static resource crawling",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "BottleLiu",
     "email": "clpliuping@126.com"
