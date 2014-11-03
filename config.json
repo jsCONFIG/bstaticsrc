@@ -1,0 +1,9 @@
+{
+    "STATIC_PROXY" : "http://bottleproxy.sinaapp.com/?key=bottleliu1991",
+    "STATIC_CACHE_PATH" : "D:\\sinaapp\\staticRouter\\cache",
+    "FILE_SPLIT_SYM" : ",",
+    "AUTO_ASSORT_PATH" : true,
+    "MONITOR_PATHS" : [],
+    "MONITOR_ALL" : true,
+    "SKIP_PATHS" : []
+}
