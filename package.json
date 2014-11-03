@@ -1,0 +1,33 @@
+{
+  "name": "bstaticsrc",
+  "description": "Web source parse, node server, web static resource crawling",
+  "version": "0.0.1",
+  "author": {
+    "name": "BottleLiu",
+    "email": "clpliuping@126.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jsCONFIG/bstaticsrc.git"
+  },
+  "homepage": "https://github.com/jsCONFIG/bstaticsrc",
+  "keywords": [
+    "node server",
+    "web source monitor",
+    "web front-end",
+    "javascript",
+    "css"
+  ],
+  "main": "./server.js",
+  "engines": {
+    "node": ">=0.4.0"
+  },
+  "readme": "# Bstaticsrc\n\nFor web static resource crawling. \n\nSteps:\n\n* Modify the configuration file \"config.json\".\n\n* Set host you want to crawl.\n\n* Start node server by \"node server.js\"\n\nMore information at https://github.com/jsconfig/bstaticsrc\n\n",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/jsCONFIG/bstaticsrc/issues"
+  },
+  "_id": "bstaticsrc@0.0.1",
+  "_from": "bstaticsrc@"
+}
