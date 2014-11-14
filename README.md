@@ -1,4 +1,4 @@
-bstaticsrc
+bstaticsrc v0.0.3
 ==========
 
 [![Bstaticsrc](http://img.shields.io/npm/v/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc) [![Bstaticsrc](http://img.shields.io/npm/dm/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc)
@@ -17,12 +17,12 @@ bstaticsrc
     node server.js
 
 ####3. config.json配置说明
+  
+  STATIC_CACHE_PATH: 缓存路径，Windows形如：D:\\bstaticsrc\\cache，Mac形如：/Users/bottle/Documents/bstaticsrc
+  
+  FILE_SPLIT_SYM: 多个文件combine的分隔符，默认为“,”，支持如：a.js,b.js格式
 
-  STATIC_PROXY: 静态资源代理地址，使用默认配置即可
-  
-  STATIC_CACHE_PATH: 缓存路径
-  
-  FILE_SPLIT_SYM: 多个文件combine的分隔符，默认为“,”
+  MULTI_FILES_PREFIX: URL路径与资源列表之间的分隔符，默认为“??”，支持如：http://a.com/p1/??a.js,b.js格式
   
   AUTO_ASSORT_PATH: 是否整理缓存路径，默认为true，将按域名创建路径
   
@@ -38,3 +38,8 @@ bstaticsrc
     2.配置config.json的缓存路径："STATIC_CACHE_PATH";
     3.node server.js 启动监听
     4.访问http://ebook.taobao.com/
+
+####5. 更新点：
+
+    1). 使用dns解析代替了线上代理获取线上资源的方式;
+    2). 增加了“MULTI_FILES_PREFIX”配置项;

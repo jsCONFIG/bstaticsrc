@@ -1,7 +1,7 @@
 {
   "name": "bstaticsrc",
   "description": "Web source parse, node server, web static resource crawling",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": {
     "name": "BottleLiu",
     "email": "clpliuping@126.com"
@@ -23,7 +23,7 @@
   "engines": {
     "node": ">=0.4.0"
   },
-  "readme": "# Bstaticsrc\n\nFor web static resource crawling. \n\nSteps:\n\n* Modify the configuration file \"config.json\".\n\n* Set host you want to crawl.\n\n* Start node server by \"node server.js\"\n\nMore information at https://github.com/jsconfig/bstaticsrc\n\n",
+  "readme": "# Bstaticsrc\n\nFor web static resource crawling. \n\nSteps:\n\n* Modify the configuration file \"config.json\".\n\n* Set host you want to crawl.\n\n* Start node server by \"node server.js\"\n\nMore information at https://github.com/jsconfig/bstaticsrc\n\n# config.json\n\n* STATIC_CACHE_PATH: local cache path. Windows eg.\"D:\\\\bstaticsrc\\\\cache\",Mac eg.\"/Users/bottle/Documents/bstaticsrc\"\n\n* FILE_SPLIT_SYM: default \",\", eg. \"a.js,b.js\"\n\n* MULTI_FILES_PREFIX: default \"??\", eg \"http://a.com/p1/??a.js,b.js\"\n\n* AUTO_ASSORT_PATH: Auto Sort by domain name, default \"true\"\n\n* MONITOR_PATHS: Monitor paths list, use keyword by function \"indexOf\", Useful in \"MONITOR_ALL\" equal \"false\"\n\n* MONITOR_ALL: Monitor all of the path.\n\n* SKIP_PATHS: Those paths ignored. Only useful in MONITOR_ALL be \"true\" ",
   "readmeFilename": "README.md",
   "bugs": {
     "url": "https://github.com/jsCONFIG/bstaticsrc/issues"

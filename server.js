@@ -11,6 +11,7 @@ var http = require('http');
 var path = require('path');
 var url  = require('url');
 var fs = require('fs');
+var dns = require('dns');
 
 var ctype = {
     'html'  : 'text/html; charset=utf-8;',
@@ -27,7 +28,7 @@ var reg = {
     // !!!!!此处可以修改为各种形式的合并路径展示规则
     // 只需保证，正则match之后的数据为[原路径, path, 文件列表块，带?的query部分]
     // 当前为提取形如"http://a.tbcdn.cn/apps/dts/th3/js/??j.min.js,tabswitch.js"的形式
-    'src'    : /^(.*)\?\?([^\?]+)(\??.*)$/,
+    'src'    : /^([^\?]+)(\??.*)$/,
 
     // 用于提取普通的单个资源信息
     'normalSrc' : /^([^\?]+)(\??.*)$/
@@ -83,9 +84,6 @@ http.createServer(function ( req, res ){
         // 当前url的parse信息
         urlInfo = url.parse( req.url ),
 
-        // 正则匹配的combine专用url信息
-        srcInfo = req.url.match( reg.src ),
-
         // src object，用于临时存储数据，保证拼凑的顺序合理
         srcObject = {},
 
@@ -97,21 +95,41 @@ http.createServer(function ( req, res ){
 
         // 单次请求完成标志(send是否已执行)
         finishFlag = false;
+
+    // 正则匹配的combine专用url信息
+    var srcInfo, dataPos, dataStr;
+    
+    if( CONFIG.MULTI_FILES_PREFIX && typeof CONFIG.MULTI_FILES_PREFIX == 'string' ) {
+        dataStr = req.url;
+
+        // 当前路径中无多文件分割前缀也认为是单个文件
+        if( dataStr.indexOf( CONFIG.MULTI_FILES_PREFIX ) != -1 ){
+
+            dataPos = dataStr.lastIndexOf( CONFIG.MULTI_FILES_PREFIX );
+
+            dataStr = dataStr.slice( dataPos + CONFIG.MULTI_FILES_PREFIX.length );
+
+            // 正则匹配信息
+            srcInfo = dataStr.match( reg.src );
+            
+        }
+    }
     
     // content-type
     GLOBAL.CONTENT_TYPE = undefined;
 
     if( srcInfo ) {
         // 资源文件列表，可自定义分隔符，默认为逗号
-        GLOBAL.SRC_LIST = srcInfo[2].split( CONFIG.FILE_SPLIT_SYM );
+        GLOBAL.SRC_LIST = srcInfo[1].split( CONFIG.FILE_SPLIT_SYM );
 
         // 资源文件所在的路径
-        GLOBAL.SRC_PATH = srcInfo[1];
+        GLOBAL.SRC_PATH = req.url.slice(0, dataPos);
 
         // query值
-        GLOBAL.SRC_QUERY = srcInfo[3] || '';
+        GLOBAL.SRC_QUERY = srcInfo[2] || '';
 
     }
+
     // 表示单个文件
     else {
         var tmpPos;
@@ -207,81 +225,104 @@ http.createServer(function ( req, res ){
             // 单个文件的线上资源路径
             var srcPath = 'http://' + reqHost + GLOBAL.SRC_PATH + item + GLOBAL.SRC_QUERY;
 
-            // 此处，由于tbcdn不支持dns解析后的ip直接访问，故
-            // 通过第三方代理访问线上资源
-            var proxySrc = CONFIG.STATIC_PROXY + '&url=' + srcPath;
+            // dns解析获取数据，避免受本地host干扰
+            var dnsSrc, serverHost;
 
-            http.get( proxySrc, function ( httpRes ) {
+            dns.resolve4( reqHost, function(err, addresses) {
                 // 临时内容存储，针对多次"data"事件的内容拼合
-                var tmpContent = '';
+                // var tmpContent = [],
+                //     contentType;
 
-                // 代理返回的content-type值
-                var contentType = httpRes.headers['content-type'];
+                serverHost = (addresses && addresses[0]) || req.headers.host;
 
-                // 无数据
-                if( httpRes.statusCode == '404' ) {
-                    console.log( 'Error: 404 not found for ' + srcPath );
+                serverHost && (dnsSrc = 'http://' + serverHost + GLOBAL.SRC_PATH + item + GLOBAL.SRC_QUERY);
 
-                    leftNum--;
-                    if( leftNum <= 0 ) {
-                        // 执行合并返回
-                        combineSrc( srcPath, contentType );
+                var headersCopy = JSON.parse(JSON.stringify(req.headers));
+
+                // 拒绝压缩，保证之后的拼接
+                headersCopy['accept-encoding'] = '';
+                var proxyReq = http.request({
+                    'host'      : serverHost || req.headers.host,
+                    'port'      : 80,
+                    'path'      : req.url,
+                    'method'    : req.method,
+                    'headers'   : headersCopy,
+                    'agent'     : false
+                }, function( proxyRes ) {
+                    var tmpContent = [],
+                        contentType;
+
+                    // 代理返回的content-type值
+                    contentType = proxyRes.headers['content-type'];
+
+                    // 无数据
+                    if( proxyRes.statusCode == '404' ) {
+                        console.log( 'Error: 404 not found for ' + srcPath );
+
+                        leftNum--;
+                        if( leftNum <= 0 ) {
+                            // 执行合并返回
+                            combineSrc( srcPath, contentType );
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                // 仅当正常返回时才赋值
-                GLOBAL.CONTENT_TYPE = contentType;
+                    proxyRes.on( 'data', function ( chunk ) {
+                        tmpContent += chunk;
+                    });
 
-                httpRes.on( 'data', function ( data ) {
-                    if( Buffer.isBuffer( data ) ) {
-                        var itemData = data.toString( 'utf-8' );
-                        tmpContent += itemData;
-                    }
+                    proxyRes.on( 'end', function () {
+
+                        // 仅在需要监听的情况做缓存
+                        if( needMonitorFlag ){
+
+                            // 将线上资源缓存到本地
+                            var cachePath = CONFIG.STATIC_CACHE_PATH + '/' + pathPrefix + GLOBAL.SRC_PATH;
+
+                            // 修正路径
+                            cachePath = cachePath.replace( /\/\//g, '\/' );
+                            
+                            // 依照请求域名，以同步方式创建文件目录
+                            // 例: /a.tbcdn.cn/s/
+                            
+                            // path处理，保证兼容item中含有路径信息的情况
+                            var tmpFilePath = pathPrefix + GLOBAL.SRC_PATH + item;
+                            tmpFilePath = tmpFilePath.slice( 0, tmpFilePath.lastIndexOf( '/' ) + 1 );
+
+                            createPath( tmpFilePath );
+
+                            fs.writeFile( cachePath + item, tmpContent, function ( err ){
+                                if( err ){
+                                    console.log( err );
+                                }
+                                else {
+                                    console.log( pathPrefix + GLOBAL.SRC_PATH + item + ' has saved!');
+                                }
+                            } ); 
+                        }
+
+                        // 先存储，全部结束之后进行合并，保证顺序性
+                        srcObject[index] = tmpContent;
+
+                        leftNum--;
+                        if( leftNum <= 0 ) {
+
+                            // 执行合并返回
+                            combineSrc( srcPath, contentType );
+                        }
+                    });
+
+                    // 仅当正常返回时才赋值
+                    GLOBAL.CONTENT_TYPE = contentType;
                 });
 
-                httpRes.on( 'end', function () {
-
-                    // 仅在需要监听的情况做缓存
-                    if( needMonitorFlag ){
-
-                        // 将线上资源缓存到本地
-                        var cachePath = CONFIG.STATIC_CACHE_PATH + '/' + pathPrefix + GLOBAL.SRC_PATH;
-
-                        // 修正路径
-                        cachePath = cachePath.replace( /\/\//g, '\/' );
-                        
-                        // 依照请求域名，以同步方式创建文件目录
-                        // 例: /a.tbcdn.cn/s/
-                        
-                        // path处理，保证兼容item中含有路径信息的情况
-                        var tmpFilePath = pathPrefix + GLOBAL.SRC_PATH + item;
-                        tmpFilePath = tmpFilePath.slice( 0, tmpFilePath.lastIndexOf( '/' ) + 1 );
-
-                        createPath( tmpFilePath );
-
-                        fs.writeFile( cachePath + item, tmpContent, function ( err ){
-                            if( err ){
-                                console.log( err );
-                            }
-                            else {
-                                console.log( pathPrefix + GLOBAL.SRC_PATH + item + ' has saved!');
-                            }
-                        } ); 
-                    }
-
-                    // 先存储，全部结束之后进行合并，保证顺序性
-                    srcObject[index] = tmpContent;
-
-                    leftNum--;
-                    if( leftNum <= 0 ) {
-
-                        // 执行合并返回
-                        combineSrc( srcPath, contentType );
-                    }
+                proxyReq.on('error', function(e) {
+                    console.log(e);
                 });
-            }).on('error', function ( e ) {
-                console.log( e );
+
+                // 启动
+                req.pipe( proxyReq );
+                
             });
         };
 
