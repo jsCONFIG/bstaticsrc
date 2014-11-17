@@ -331,7 +331,8 @@ http.createServer(function ( req, res ){
         var filePath = parsePathStr( CONFIG.STATIC_CACHE_PATH + tmpFPath );
 
         // 判断当前路径是否需要监听
-        needMonitorFlag = isPathNeedMonitor( tmpFPath );
+        // 修正为完整的单文件路径，用于支持针对域名的关键词处理
+        needMonitorFlag = isPathNeedMonitor( parsePathStr( 'http://' + reqHost + GLOBAL.SRC_PATH + item ) );
 
         needMonitorFlag && fs.exists( filePath, function ( exist ) {
 

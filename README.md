@@ -1,4 +1,4 @@
-bstaticsrc v0.0.3
+bstaticsrc v0.0.4
 ==========
 
 [![Bstaticsrc](http://img.shields.io/npm/v/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc) [![Bstaticsrc](http://img.shields.io/npm/dm/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc)
