@@ -239,10 +239,14 @@ http.createServer(function ( req, res ){
 
                 var headersCopy = JSON.parse(JSON.stringify(req.headers));
 
+                var aliasHost = CONFIG['ALIAS_HOST'][reqHost];
+
                 // 拒绝压缩，保证之后的拼接
                 headersCopy['accept-encoding'] = '';
                 var proxyReq = http.request({
-                    'host'      : serverHost || req.headers.host,
+
+                    // 配置的别名host优先
+                    'host'      : aliasHost || serverHost || req.headers.host,
                     'port'      : 80,
                     'path'      : req.url,
                     'method'    : req.method,

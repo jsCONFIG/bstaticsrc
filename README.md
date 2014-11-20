@@ -1,9 +1,21 @@
-bstaticsrc v0.0.4
+bstaticsrc v0.0.5
 ==========
 
 [![Bstaticsrc](http://img.shields.io/npm/v/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc) [![Bstaticsrc](http://img.shields.io/npm/dm/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc)
 
 基于node的静态资源抓取及解析工具，特别适用于静态资源使用cdn的情况。启动服务后，设置相应的host，将根据配置文件里的设置，自动解析并缓存相应的数据到本地，之后的静态资源请求，将优先本地缓存文件。默认支持形如“http://a.tbcdn.cn/apps/dts/th3/js/??j.min.js,tabswitch.js” 的combine资源解析，当前仅支持http请求。
+
+####提供功能
+
+  1). 多功能的本地开发服务器；
+
+  2). 网页静态资源结构解析；
+
+  3). 本地开发调试combine工具；
+
+  4). 简单的combine资源解析；
+  
+  5). 网站静态资源下载工具；
 
 ####1. 安装/下载
 
@@ -31,6 +43,8 @@ bstaticsrc v0.0.4
   MONITOR_ALL: 是否监听全部，默认为true，开启后，MONITOR_PATHS的内容将无效
   
   SKIP_PATHS: 略过的监听路径列表，规则同MONITOR_PATHS，仅在MONITOR_ALL为true的情况有效
+
+  ALIAS_HOST: 别名host设置，类似于系统中hosts的设置，可配合该设置做combine工具使用(如开发机不支持打包，仅提供资源的情况)。例：{"js.t.sinajs.cn" : "10.210.215.97"}
   
 ####4. 示例：
 
@@ -41,5 +55,4 @@ bstaticsrc v0.0.4
 
 ####5. 更新点：
 
-    1). 使用dns解析代替了线上代理获取线上资源的方式;
-    2). 增加了“MULTI_FILES_PREFIX”配置项;
+    1). 增加"ALIAS_HOST"配置项
