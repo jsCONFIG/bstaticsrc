@@ -3,7 +3,7 @@ bstaticsrc v0.0.5
 
 [![Bstaticsrc](http://img.shields.io/npm/v/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc) [![Bstaticsrc](http://img.shields.io/npm/dm/bstaticsrc.svg)](https://www.npmjs.org/package/bstaticsrc)
 
-基于node的静态资源抓取及解析工具，特别适用于静态资源使用cdn的情况。启动服务后，设置相应的host，将根据配置文件里的设置，自动解析并缓存相应的数据到本地，之后的静态资源请求，将优先本地缓存文件。默认支持形如“http://a.tbcdn.cn/apps/dts/th3/js/??j.min.js,tabswitch.js” 的combine资源解析，当前仅支持http请求。
+基于node的静态资源抓取及解析工具，特别适用于静态资源使用cdn的情况。启动服务后，设置相应的host，将根据配置文件里的设置，自动解析并缓存相应的数据到本地，之后的静态资源请求，将优先本地缓存文件。默认支持形如“http://a.tbcdn.cn/apps/dts/th3/js/??j.min.js,tabswitch.js” 的combine资源解析，当前仅支持http请求，https请求的支持正在开发中。
 
 ####提供功能
 
