@@ -35,15 +35,7 @@ var reg = {
 };
 
 // 读配置信息
-var CONFIG = {},
-
-    CONFIG_PATH = path.join(__dirname, 'config.json');
-
-fs.readFile( CONFIG_PATH, function( err, data ){
-    if( !err ) {
-        CONFIG = JSON.parse( data.toString( 'utf-8' ) || '{}' );
-    }
-});
+var CONFIG = require('./config.json');
 
 // 创建路径，如果已存在则直接返回(同步创建)
 var createPath = function ( path ) {
